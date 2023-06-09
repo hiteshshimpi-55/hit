@@ -1,71 +1,112 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
 )
 
+type operationFunc func([]float64) (float64, error)
+
+var operations = map[string]operationFunc{
+	"-add":  addition,
+	"-sub":  subtraction,
+	"-mul":  multiplication,
+	"-div":  division,
+	"-cm2m": cmToM,
+	"-m2cm": mToCm,
+	"-l2ml": lToMl,
+	"-ml2l": mlToL,
+}
+
 func main() {
-	if len(os.Args) < 4 {
+	if len(os.Args) < 3 {
 		fmt.Println("Invalid number of arguments")
-		fmt.Println("Usage: calculator <num1> <num2> <operation>")
+		fmt.Println("Usage: calculator <operation> <num1> [<num2>...]")
 		return
 	}
 
-	a := os.Args[1]
-	b := os.Args[2]
-	op := os.Args[3]
+	op := os.Args[1]
+	args := os.Args[2:]
 
-	num1, err := strconv.ParseInt(a, 10, 64)
-	if err != nil {
-		fmt.Println("Invalid argument for num1:", a)
-		return
+	nums := make([]float64, len(args))
+	for i, arg := range args {
+		num, err := strconv.ParseFloat(arg, 64)
+		if err != nil {
+			fmt.Println("Invalid argument:", arg)
+			return
+		}
+		nums[i] = num
 	}
 
-	num2, err := strconv.ParseInt(b, 10, 64)
-	if err != nil {
-		fmt.Println("Invalid argument for num2:", b)
-		return
-	}
-
-	result := calculate(num1, num2, op)
-	fmt.Println("Result:", result)
-}
-
-func calculate(num1, num2 int64, op string) int64 {
-	switch op {
-	case "-add":
-		return addition(num1, num2)
-	case "-sub":
-		return subtraction(num1, num2)
-	case "-mul":
-		return multiplication(num1, num2)
-	case "-div":
-		return division(num1, num2)
-	default:
+	if operation, ok := operations[op]; ok {
+		result, err := operation(nums)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Result:", result)
+		}
+	} else {
 		fmt.Println("Invalid operation:", op)
-		return 0
 	}
 }
 
-// Basic Math Functions
-func addition(num1, num2 int64) int64 {
-	return num1 + num2
-}
-
-func subtraction(num1, num2 int64) int64 {
-	return num1 - num2
-}
-
-func multiplication(num1, num2 int64) int64 {
-	return num1 * num2
-}
-
-func division(num1, num2 int64) int64 {
-	if num2 == 0 {
-		fmt.Println("Cannot divide by zero")
-		return 0
+func addition(nums []float64) (float64, error) {
+	if len(nums) != 2 {
+		return 0, errors.New("Addition requires 2 arguments")
 	}
-	return num1 / num2
+	return nums[0] + nums[1], nil
+}
+
+func subtraction(nums []float64) (float64, error) {
+	if len(nums) != 2 {
+		return 0, errors.New("Subtraction requires 2 arguments")
+	}
+	return nums[0] - nums[1], nil
+}
+
+func multiplication(nums []float64) (float64, error) {
+	if len(nums) != 2 {
+		return 0, errors.New("Multiplication requires 2 arguments")
+	}
+	return nums[0] * nums[1], nil
+}
+
+func division(nums []float64) (float64, error) {
+	if len(nums) != 2 {
+		return 0, errors.New("Division requires 2 arguments")
+	}
+	if nums[1] == 0 {
+		return 0, errors.New("Cannot divide by zero")
+	}
+	return nums[0] / nums[1], nil
+}
+
+func cmToM(nums []float64) (float64, error) {
+	if len(nums) != 1 {
+		return 0, errors.New("cm to m conversion requires 1 argument")
+	}
+	return nums[0] / 100, nil
+}
+
+func mToCm(nums []float64) (float64, error) {
+	if len(nums) != 1 {
+		return 0, errors.New("m to cm conversion requires 1 argument")
+	}
+	return nums[0] * 100, nil
+}
+
+func lToMl(nums []float64) (float64, error) {
+	if len(nums) != 1 {
+		return 0, errors.New("l to ml conversion requires 1 argument")
+	}
+	return nums[0] * 1000, nil
+}
+
+func mlToL(nums []float64) (float64, error) {
+	if len(nums) != 1 {
+		return 0, errors.New("ml to l conversion requires 1 argument")
+	}
+	return nums[0] / 1000, nil
 }
