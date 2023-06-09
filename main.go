@@ -7,52 +7,65 @@ import (
 )
 
 func main() {
-	a := "0"
-	b := "0"
-	op := "-add"
-
-	if len(os.Args) >= 3 {
-		a = os.Args[1]
-		b = os.Args[2]
-		op = os.Args[3]
-	} else {
-		fmt.Println("Please pass arguments and operations to perform. . . .")
+	if len(os.Args) < 4 {
+		fmt.Println("Invalid number of arguments")
+		fmt.Println("Usage: calculator <num1> <num2> <operation>")
 		return
 	}
 
-	num1, _ := strconv.ParseInt(a, 10, 64)
-	num2, _ := strconv.ParseInt(b, 10, 64)
-	var result int64
-	switch op {
-	case "-add":
-		result = addition(num1, num2)
-	case "-sub":
-		result = subtraction(num1, num2)
-	case "-mul":
-		result = multiplication(num1, num2)
-	case "-div":
-		result = division(num1, num2)
+	a := os.Args[1]
+	b := os.Args[2]
+	op := os.Args[3]
+
+	num1, err := strconv.ParseInt(a, 10, 64)
+	if err != nil {
+		fmt.Println("Invalid argument for num1:", a)
+		return
 	}
 
-	fmt.Println(result)
+	num2, err := strconv.ParseInt(b, 10, 64)
+	if err != nil {
+		fmt.Println("Invalid argument for num2:", b)
+		return
+	}
+
+	result := calculate(num1, num2, op)
+	fmt.Println("Result:", result)
 }
 
-func addition(num1 int64, num2 int64) int64 {
-	result := num1 + num2
-	return result
+func calculate(num1, num2 int64, op string) int64 {
+	switch op {
+	case "-add":
+		return addition(num1, num2)
+	case "-sub":
+		return subtraction(num1, num2)
+	case "-mul":
+		return multiplication(num1, num2)
+	case "-div":
+		return division(num1, num2)
+	default:
+		fmt.Println("Invalid operation:", op)
+		return 0
+	}
 }
 
-func subtraction(num1 int64, num2 int64) int64 {
-	result := num1 - num2
-	return result
+// Basic Math Functions
+func addition(num1, num2 int64) int64 {
+	return num1 + num2
 }
 
-func multiplication(num1 int64, num2 int64) int64 {
-	result := num1 * num2
-	return result
+func subtraction(num1, num2 int64) int64 {
+	return num1 - num2
 }
 
-func division(num1 int64, num2 int64) int64 {
-	result := num1 / num2
-	return result
+func multiplication(num1, num2 int64) int64 {
+	return num1 * num2
+}
+
+func division(num1, num2 int64) int64 {
+	if num2 == 0 {
+		fmt.Println("Cannot divide by zero")
+		return 0
+	}
+	return num1 / num2
 }
